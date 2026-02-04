@@ -1,20 +1,36 @@
 package com.openclassrooms.safetynet_alerts.service;
 
 
+import com.openclassrooms.safetynet_alerts.dto.FirestationResponseDTO;
+import com.openclassrooms.safetynet_alerts.dto.PersonFirestationDTO;
 import com.openclassrooms.safetynet_alerts.model.FirestationModel;
+import com.openclassrooms.safetynet_alerts.model.PersonModel;
 import com.openclassrooms.safetynet_alerts.repository.FirestationRepository;
+import com.openclassrooms.safetynet_alerts.repository.PersonRepository;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class FirestationService {
 
+    //chercher ce que c'est ça et comment le traduire ?
     private final FirestationRepository firestationRepository;
+    private final PersonRepository personRepository;
+    private final AgeService ageService;
 
-    public FirestationService(FirestationRepository firestationRepository){
+    public FirestationService(FirestationRepository firestationRepository, PersonRepository personRepository, AgeService ageService){
         this.firestationRepository = firestationRepository;
+        this.personRepository = personRepository;
+        this.ageService = ageService;
+    }
+
+    //GET
+    public List<FirestationModel> getAllFirestation(FirestationModel firestation) throws IOException{
+        List<FirestationModel> firestations = firestationRepository.findAll();
+        return firestations;
     }
 
     //ADD
@@ -57,4 +73,5 @@ public class FirestationService {
         }
         return removed;
     }
+
 }

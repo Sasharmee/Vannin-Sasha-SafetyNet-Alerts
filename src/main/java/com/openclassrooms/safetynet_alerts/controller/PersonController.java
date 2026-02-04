@@ -19,7 +19,7 @@ public class PersonController {
 
     }
 
-    //GET
+    //GET, attention pas forcement nécessaire ici
     @GetMapping
     public List<PersonModel> getAllPersons() throws IOException {
         return service.getAllPersons();

@@ -19,6 +19,12 @@ public class MedicalrecordService {
         this.personRepository = personRepository;
     }
 
+    //GET
+    public List<MedicalrecordModel> getAllMedicalrecord() throws IOException {
+        return medicalrecordRepository.findAll();
+    }
+
+
     //ADD
     public MedicalrecordModel addMedicalrecord(MedicalrecordModel medicalrecord) throws IOException{
         List<MedicalrecordModel> medicalrecords = medicalrecordRepository.findAll();

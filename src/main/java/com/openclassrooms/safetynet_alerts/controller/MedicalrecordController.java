@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/medicalRecord")
@@ -15,6 +16,12 @@ public class MedicalrecordController {
 
     public MedicalrecordController(MedicalrecordService medicalrecordService){
         this.medicalrecordService = medicalrecordService;
+    }
+
+    //GET
+    @GetMapping
+    public List<MedicalrecordModel> getAllMedicalrecord() throws IOException{
+        return medicalrecordService.getAllMedicalrecord();
     }
 
     //POST
@@ -31,8 +38,9 @@ public class MedicalrecordController {
 
     //DELETE
     @DeleteMapping
-    public boolean deleteMedicalrecord(@RequestParam String firstName, @RequestParam String lastName) throws IOException{
-        medicalrecordService.deleteMedicalrecord(firstName, lastName);
-        return ResponseEntity.noContent().build().hasBody(); // à vérifier ici sinon on met comme dans personController
+    public boolean deleteMedicalrecord(@RequestParam String firstName,
+                                       @RequestParam String lastName) throws IOException {
+        return medicalrecordService.deleteMedicalrecord(firstName, lastName);
     }
+
 }
