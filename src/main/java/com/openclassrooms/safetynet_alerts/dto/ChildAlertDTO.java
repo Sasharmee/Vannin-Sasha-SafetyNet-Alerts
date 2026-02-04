@@ -10,12 +10,12 @@ public class ChildAlertDTO {
 
     private int age;
 
-    private List<String> householdMembers;
+    private List<HouseholdMemberDTO> householdMembers;
 
     public ChildAlertDTO() {//Constructeur vide pour Jackson
     }
 
-    public ChildAlertDTO(String firstName, String lastName, int age, List<String> householdMembers) {
+    public ChildAlertDTO(String firstName, String lastName, int age, List<HouseholdMemberDTO> householdMembers) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.age = age;
@@ -46,11 +46,11 @@ public class ChildAlertDTO {
         this.age = age;
     }
 
-    public List<String> getHouseholdMembers() {
+    public List<HouseholdMemberDTO> getHouseholdMembers() {
         return householdMembers;
     }
 
-    public void setHouseholdMembers(List<String> householdMembers) {
+    public void setHouseholdMembers(List<HouseholdMemberDTO> householdMembers) {
         this.householdMembers = householdMembers;
     }
 }
