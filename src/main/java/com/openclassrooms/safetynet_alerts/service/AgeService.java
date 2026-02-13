@@ -3,6 +3,8 @@ package com.openclassrooms.safetynet_alerts.service;
 import com.openclassrooms.safetynet_alerts.model.MedicalrecordModel;
 import com.openclassrooms.safetynet_alerts.model.PersonModel;
 import com.openclassrooms.safetynet_alerts.repository.MedicalrecordRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -14,6 +16,8 @@ import java.util.List;
 
 @Service
 public class AgeService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AgeService.class);
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
     private static final int ADULT_AGE_THRESHOLD = 18;
@@ -27,6 +31,9 @@ public class AgeService {
     }
 
     public int calculateAge(PersonModel person) throws IOException {
+
+        logger.debug("Calculating age for {} {}", person.getFirstName(), person.getLastName());
+
         List<MedicalrecordModel> medicalrecords = medicalrecordRepository.findAll();
 
         for (MedicalrecordModel medicalrecord: medicalrecords){
@@ -35,20 +42,27 @@ public class AgeService {
                 LocalDate birthdate = LocalDate.parse(medicalrecord.getBirthdate(), DATE_TIME_FORMATTER);
                 LocalDate today = LocalDate.now(clock);
 
-                return Period.between(birthdate, today).getYears();
+                int age = Period.between(birthdate, today).getYears();
+                logger.debug("Age calculated for {} {} = {}", person.getFirstName(), person.getLastName(), age);
+
+                return age;
             }
         }
+        logger.debug("No medical record found for {} {}", person.getFirstName(), person.getLastName());
         return -1; //exception si person pas trouvée
 
     }
 
     public boolean isAdult(PersonModel person) throws IOException {
-        return this.calculateAge(person) > ADULT_AGE_THRESHOLD;
+        boolean isAdult = this.calculateAge(person) > ADULT_AGE_THRESHOLD;
+        logger.debug("{} {} isAdult={}", person.getFirstName(), person.getLastName(), isAdult);
+        return isAdult;
     }
 
     public boolean isChild(PersonModel person) throws IOException{
-        return this.calculateAge(person)<= ADULT_AGE_THRESHOLD;
-
+        boolean isChild = this.calculateAge(person) <= ADULT_AGE_THRESHOLD;
+        logger.debug("{} {} isChild={}", person.getFirstName(), person.getLastName(), isChild);
+        return isChild;
     }
 
 }

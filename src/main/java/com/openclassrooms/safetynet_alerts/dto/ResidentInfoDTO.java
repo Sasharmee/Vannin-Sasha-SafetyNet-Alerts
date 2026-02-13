@@ -2,7 +2,7 @@ package com.openclassrooms.safetynet_alerts.dto;
 
 import java.util.List;
 
-public class PersonInfoDTO {
+public class ResidentInfoDTO {
 
     private String lastName;
 
@@ -14,10 +14,10 @@ public class PersonInfoDTO {
 
     private List<String> allergies;
 
-    public PersonInfoDTO() { //constructeur vide pour Jackson
+    public ResidentInfoDTO() { //constructeur vide pour Jackson
     }
 
-    public PersonInfoDTO(String lastName, String phone, int age, List<String> medications, List<String> allergies) {
+    public ResidentInfoDTO(String lastName, String phone, int age, List<String> medications, List<String> allergies) {
         this.lastName = lastName;
         this.phone = phone;
         this.age = age;
