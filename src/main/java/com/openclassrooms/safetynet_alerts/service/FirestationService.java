@@ -1,10 +1,8 @@
 package com.openclassrooms.safetynet_alerts.service;
 
 
-import com.openclassrooms.safetynet_alerts.dto.FirestationResponseDTO;
-import com.openclassrooms.safetynet_alerts.dto.PersonFirestationDTO;
+
 import com.openclassrooms.safetynet_alerts.model.FirestationModel;
-import com.openclassrooms.safetynet_alerts.model.PersonModel;
 import com.openclassrooms.safetynet_alerts.repository.FirestationRepository;
 import com.openclassrooms.safetynet_alerts.repository.PersonRepository;
 import org.slf4j.Logger;

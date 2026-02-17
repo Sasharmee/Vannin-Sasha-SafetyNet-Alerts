@@ -1,7 +1,6 @@
 package com.openclassrooms.safetynet_alerts.controller;
 
 
-import com.openclassrooms.safetynet_alerts.dto.FirestationResponseDTO;
 import com.openclassrooms.safetynet_alerts.model.FirestationModel;
 import com.openclassrooms.safetynet_alerts.service.FirestationService;
 import org.slf4j.Logger;
