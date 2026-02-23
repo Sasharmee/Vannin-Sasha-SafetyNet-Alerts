@@ -2,6 +2,9 @@ package com.openclassrooms.safetynet_alerts.model;
 
 import java.util.List;
 
+/**
+ * Modèle représentant l'association entre une personne et ses données médicales.
+ */
 public class MedicalrecordModel {
     private String firstName;
 
@@ -13,9 +16,23 @@ public class MedicalrecordModel {
 
     private List<String> allergies;
 
-    public MedicalrecordModel(){
-        //constructeur vide pour Jackson
+    /**
+     * Constructeur vide requis par Jackson pour la
+     * désérialisation JSON.
+     */
+    public MedicalrecordModel() {
+
     }
+
+    /**
+     * Constructeur permettant de créer une association entre une personne et ses données médicales.
+     *
+     * @param firstName   prénom de la personne
+     * @param lastName    nom de la personne
+     * @param birthdate   date de naissance de la personne
+     * @param medications liste des médicaments de la personne
+     * @param allergies   liste des allergies de la personne
+     */
 
     public MedicalrecordModel(String firstName, String lastName, String birthdate, List<String> medications, List<String> allergies) {
         this.firstName = firstName;

@@ -12,6 +12,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service responsable de la logique métier de l'endpoint /phoneAlert.
+ * <p>
+ * Ce service permet de récupérer les numéros de téléphone des résidents
+ * desservis par la caserne donnée.
+ */
+
 @Service
 public class PhoneAlertService {
 
@@ -21,48 +28,56 @@ public class PhoneAlertService {
     private final PersonRepository personRepository;
     private final FirestationRepository firestationRepository;
 
-    public PhoneAlertService(PersonRepository personRepository, FirestationRepository firestationRepository){
+    /**
+     * Construit le service PhoneAlert
+     *
+     * @param personRepository      repository permettant d'accéder aux données personnelles des personnes
+     * @param firestationRepository repository permettant d'accéder aux données des casernes
+     */
+    public PhoneAlertService(PersonRepository personRepository, FirestationRepository firestationRepository) {
         this.personRepository = personRepository;
         this.firestationRepository = firestationRepository;
     }
-    //on définit que la méthode doit renvoyer une liste de string selon les numéros de station
-    public List<String> getPhoneByStation(String stationNumber) throws IOException{
+
+    /**
+     * Récupère la liste des numéros de téléphone des résidents desservis par la caserne donnée
+     *
+     * @param stationNumber numéro de la caserne à analyser
+     * @return liste de numéro de téléphone des résidents couverts
+     * @throws IOException en cas d'erreur lors de l'accès aux données
+     */
+    public List<String> getPhoneByStation(String stationNumber) throws IOException {
 
         logger.debug("Starting phone alert search for stationNumber={}", stationNumber);
 
-        //on récupére les firestations qu'on met dans une liste qui respecte notre modèle
         List<FirestationModel> firestations = firestationRepository.findAll();
         logger.debug("Loaded {} firestations", firestations.size());
 
-        //on garde les adresses qui correspondent à la station renseignée
         List<String> addresses = new ArrayList<>();
 
-        for (FirestationModel fs: firestations){
-            if(fs.getAddress()!=null && fs.getStation().equals(stationNumber)){
+        for (FirestationModel fs : firestations) {
+            if (fs.getAddress() != null && fs.getStation().equals(stationNumber)) {
                 addresses.add(fs.getAddress());
             }
         }
         logger.debug("Found {} addresses covered by stationNumber={}", addresses.size(), stationNumber);
 
-        //récupére les persons
         List<PersonModel> persons = personRepository.findAll();
         logger.debug("Loaded {} persons", persons.size());
 
-        //création de la liste qui récupère les téléphones
         List<String> phones = new ArrayList<>();
 
-        //si l'adresse de la person est couverte par la station
-        for (PersonModel p: persons){
-            if (p.getAddress()!=null && addresses.contains(p.getAddress())){
-               //on ajoute son numéro
-               if (p.getPhone()!=null){
-                   phones.add(p.getPhone());
-               }
+        for (PersonModel p : persons) {
+            if (p.getAddress() != null && addresses.contains(p.getAddress())) {
+                //on ajoute son numéro
+                if (p.getPhone() != null) {
+                    phones.add(p.getPhone());
+                }
             }
         }
         logger.debug("Phone alert search completed for stationNumber={}, phonesReturned={}",
                 stationNumber, phones.size());
 
-    return phones;
+        return phones;
     }
 }

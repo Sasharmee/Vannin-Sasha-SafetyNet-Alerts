@@ -2,7 +2,9 @@ package com.openclassrooms.safetynet_alerts.model;
 
 import java.util.Objects;
 
-//point important pour pouvoir delete on va utiliser combinaison prénom+nom
+/**
+ * Modèle représentant l'association entre une personne et ses données personnelles.
+ */
 
 public class PersonModel {
 
@@ -20,16 +22,30 @@ public class PersonModel {
 
     private String email;
 
-    public PersonModel(){
-        //constructeur vide pour Jackson
+    /**
+     * Constructeur vide requis par Jackson pour la
+     * désérialisation JSON.
+     */
+    public PersonModel() {
     }
 
-    public PersonModel(String firstName, String lastName, String address, String city, String zip, String phone, String email){
+    /**
+     * Constructeur permettant de créer une association entre une personne et ses données personnelles.
+     *
+     * @param firstName prénom de la personne
+     * @param lastName  nom de la personne
+     * @param address   adresse de la personne
+     * @param city      ville de résidence de la personne
+     * @param zip       code postal de la personne
+     * @param phone     numéro de téléphone de la personne
+     * @param email     adresse mail de la personne
+     */
+    public PersonModel(String firstName, String lastName, String address, String city, String zip, String phone, String email) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
         this.city = city;
-        this.zip= zip;
+        this.zip = zip;
         this.phone = phone;
         this.email = email;
     }
@@ -90,7 +106,7 @@ public class PersonModel {
         this.email = email;
     }
 
-    //ajout de la méthode d'authentification via prénom + nom
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -98,6 +114,7 @@ public class PersonModel {
         PersonModel p = (PersonModel) o;
         return firstName.equals(p.firstName) && lastName.equals(p.lastName);
     }
+
     @Override
     public int hashCode() {
         return Objects.hash(firstName, lastName);

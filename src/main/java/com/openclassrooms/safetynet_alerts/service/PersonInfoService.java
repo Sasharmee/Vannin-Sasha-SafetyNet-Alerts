@@ -14,6 +14,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service responsable de la logique métier de l'endpoint /personInfoLastName avec comme paramètre lastName
+ * <p>
+ * Ce service permet de récupérer les données personnelles et médicales selon le nom donné
+ */
+
 @Service
 public class PersonInfoService {
 
@@ -23,12 +29,26 @@ public class PersonInfoService {
     private final MedicalrecordRepository medicalrecordRepository;
     private final AgeService ageService;
 
-    public PersonInfoService(PersonRepository personRepository, MedicalrecordRepository medicalrecordRepository, AgeService ageService){
+    /**
+     * Construit le service PersonInfo
+     *
+     * @param personRepository        repository permettant l'accès aux données des personnes
+     * @param medicalrecordRepository repository permettant l'accès aux données médicales des personnes
+     * @param ageService              service permettant de calculer l'âge ainsi que de déterminer si la personne est mineure ou non
+     */
+    public PersonInfoService(PersonRepository personRepository, MedicalrecordRepository medicalrecordRepository, AgeService ageService) {
         this.personRepository = personRepository;
         this.medicalrecordRepository = medicalrecordRepository;
         this.ageService = ageService;
     }
 
+    /**
+     * Récupère les informations personnelles et médicales des personnes portant le nom donné
+     *
+     * @param lastName nom à analyser
+     * @return liste de {@link PersonInfoDTO} correspondant aux personnes trouvées
+     * @throws IOException en cas d'erreur lors de l'accès aux données
+     */
     public List<PersonInfoDTO> getPersonInfoByLastName(String lastName) throws IOException {
 
         logger.debug("Starting to search personInfo for lastName: {}", lastName);

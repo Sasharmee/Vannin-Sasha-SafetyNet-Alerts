@@ -1,5 +1,17 @@
 package com.openclassrooms.safetynet_alerts.dto;
 
+/**
+ * DTO représentant une personne couverte par une caserne dans le cadre de l’endpoint /firestation?stationNumber={stationNumber}.
+ * <p>
+ * <p>
+ * Ce DTO contient uniquement :
+ * <ul>
+ *     <li>Le prénom</li>
+ *     <li>Le nom de famille</li>
+ *     <li>L’adresse</li>
+ *     <li>Le numéro de téléphone</li>
+ * </ul>
+ */
 public class PersonFirestationDTO {
 
     private String firstName;
@@ -10,9 +22,22 @@ public class PersonFirestationDTO {
 
     private String phone;
 
-    public PersonFirestationDTO() {//constructeur vide pour Jackson
+    /**
+     * Constructeur vide requis par Jackson pour la
+     * désérialisation JSON.
+     */
+
+    public PersonFirestationDTO() {
     }
 
+    /**
+     * Constructeur permettant d'instancier un PersonFirestationDTO
+     *
+     * @param firstName prénom de la personne
+     * @param lastName  nom de la personne
+     * @param address   adresse de la personne
+     * @param phone     numéro de téléphone de la personne
+     */
     public PersonFirestationDTO(String firstName, String lastName, String address, String phone) {
         this.firstName = firstName;
         this.lastName = lastName;

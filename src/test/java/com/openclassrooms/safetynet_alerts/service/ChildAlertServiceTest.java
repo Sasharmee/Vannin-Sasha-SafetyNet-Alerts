@@ -17,26 +17,56 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+/**
+ * Tests unitaires du {@link ChildAlertService}
+ * <p>
+ * Cette classe vérifie la logique métier de l'endpoint {@code /childAlert}:
+ * à partir d'une adresse, le service doit identifier les enfants (=<18 ans), calculer leur âge et lister les autres membres du foyer
+ *
+ *
+ */
 @ExtendWith(MockitoExtension.class)
 public class ChildAlertServiceTest {
 
+    /**
+     * Mock du repository des personnes.
+     * Permet de simuler les données retournées sans accéder à la source réelle.
+     */
     @Mock
     private PersonRepository personRepository;
-
+    /**
+     * Mock du service de calcul d'âge.
+     * Permet de contrôler les retours de {@code calculateAge()} et {@code isChild()}.
+     */
     @Mock
     private AgeService ageService;
-
+    /**
+     * Instance du service à tester, avec injections automatiques des mocks.
+     */
     @InjectMocks
     private ChildAlertService childAlertService;
-
+    /**
+     * Données de test : liste complète de personnes simulées
+     */
     private List<PersonModel> persons;
-
+    /**
+     * Personne mineure vivant à l'adresse ciblée
+     */
     private PersonModel child;
+    /**
+     * Personne majeure vivant à l'adresse ciblée
+     */
     private PersonModel adult;
+    /**
+     * Personne vivant à une autre adresse
+     */
     private PersonModel other;
 
+    /**
+     * Initialise les données de test avant chaque méthode
+     */
     @BeforeEach
-    void setUp(){
+    void setUp() {
         persons = new ArrayList<>();
 
         child = new PersonModel();
@@ -65,9 +95,14 @@ public class ChildAlertServiceTest {
         persons.add(other);
     }
 
-    //Test comportement attendu, happy path
+    /**
+     * Vérifie que le service retourne correctement un {@link ChildAlertDTO} lorsque :
+     * l'enfant vit à l'adresse donnée et qu'un adulte partage le même foyer.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void getChildrenByAddress_shouldReturnChildDTO() throws Exception{
+    void getChildrenByAddress_shouldReturnChildDTO() throws Exception {
         //GIVEN
         when(personRepository.findAll()).thenReturn(persons);
         //Age child
@@ -92,9 +127,13 @@ public class ChildAlertServiceTest {
         assertThat(memberDTO.getLastName()).isEqualTo("Snoc");
     }
 
-    //Test quand pas de child à l'address
+    /**
+     * Vérifie que le service retourne une liste vide lorsque l'enfant ne vit pas à l'adresse indiquée.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void getChildrenByAddress_whenNoChildrenAtAddress_shouldReturnEmptyList() throws Exception{
+    void getChildrenByAddress_whenNoChildrenAtAddress_shouldReturnEmptyList() throws Exception {
         when(personRepository.findAll()).thenReturn(persons);
         when(ageService.isChild(child)).thenReturn(false);
         when(ageService.isChild(adult)).thenReturn(false);
@@ -106,9 +145,13 @@ public class ChildAlertServiceTest {
         assertThat(result).isEmpty();
     }
 
-    //Test quand child pas bonne address
+    /**
+     * Vérifie que le service retourne une liste vide lorsque l'enfant n'a pas d'adresse (adresse {@code null} pour l'enfant)
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void getChildrenByAddress_whenChildrenWithoutAddress_shouldReturnEmptyList() throws Exception{
+    void getChildrenByAddress_whenChildrenWithoutAddress_shouldReturnEmptyList() throws Exception {
         child.setAddress(null);
         when(personRepository.findAll()).thenReturn(persons);
         //when(ageService.isChild(child)).thenReturn(true);

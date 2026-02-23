@@ -3,15 +3,14 @@ package com.openclassrooms.safetynet_alerts.controller;
 
 import com.openclassrooms.safetynet_alerts.service.CommunityEmailService;
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.http.MediaType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 
 import java.io.IOException;
 import java.util.List;
@@ -20,31 +19,48 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-//extension permet d'utiliser @Mock et @InjectMocks
+/**
+ * Classe de test du {@link CommunityEmailController}
+ * <p>
+ * Cette classe vérifie le bon fonctionnement de l'endpoint /communityEmail
+ */
+
 @ExtendWith(MockitoExtension.class)
 public class CommunityEmailControllerTest {
 
-    //on créé un faux service
+    /**
+     * Service mocké pour isoler le controller
+     */
     @Mock
     private CommunityEmailService service;
 
-    //Mockito créé le controller et y injecte le service créé
+    /**
+     * Controller injecté avec le service mocké
+     */
     @InjectMocks
     private CommunityEmailController controller;
 
-    //faux serveur HTTP qui simule les appels HTTP sans démarrer tomcat ni ouvrir le port
+    /**
+     * Outil permettant de simuler les requêtes HTTP
+     */
     private MockMvc mockMvc;
 
-
-    //créé un MockMvc en standalone, charge uniquement le controller, on test ce controller et rien d'autre
+    /**
+     * Initialise MockMvc avant chaque test avec le GlobalExceptionHandler configuré
+     */
     @BeforeEach
-    void setUp(){
+    void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new GlobalExceptionHandler()).build();
     }
 
-    //méthode testée et comportement attendu par la méthode
+    /**
+     * Vérifie que l'endpoint retourne correctement une liste d'e-mails lorsque des personnes
+     * sont trouvées pour une ville donnée.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void getEmailsByCity_shouldReturnListOfEmails() throws Exception{
+    void getEmailsByCity_shouldReturnListOfEmails() throws Exception {
         //Données du test
         String city = "Paris";
         List<String> emails = List.of("Samy@mail.com", "cons@mail.com");
@@ -52,29 +68,37 @@ public class CommunityEmailControllerTest {
 
         //Appel HTTP + assertions
         mockMvc.perform(get("/communityEmail")
-                .param("city", city)
-                .accept(MediaType.APPLICATION_JSON))
+                        .param("city", city)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0]").value("Samy@mail.com"))
                 .andExpect(jsonPath("$[1]").value("cons@mail.com"))
                 .andExpect(jsonPath("$.length()").value(2));
     }
 
-    //Test d'erreur lorsque notre service lève une exception
+    /**
+     * Vérifie que l'endpoint retourne une erreur 500 lorsque le service lève une {@link IOException}
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void getEmailsByCity_serviceThrowsIOException_shouldReturn500() throws Exception{
+    void getEmailsByCity_serviceThrowsIOException_shouldReturn500() throws Exception {
         //Données du test
         String city = "Paris";
         List<String> emails = List.of("Samy@mail.com", "cons@mail.com");
         when(service.getEmailsByCity(city)).thenThrow(new IOException("boom"));
 
         mockMvc.perform(get("/communityEmail")
-                .param("city", city))
+                        .param("city", city))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("Internal server error"));
     }
 
-    //Test lorsque la ville n'est pas renseignée
+    /**
+     * Vérifie que l'endpoint retourne une erreur 400 quand le paramètre "city" n'est pas renseigné
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
     void getEmailsByCity_missingCity_shouldReturn400() throws Exception {
 

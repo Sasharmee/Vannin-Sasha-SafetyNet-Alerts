@@ -13,24 +13,41 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+/**
+ * Tests unitaires du {@link MedicalrecordService}
+ * <p>
+ * Cette classe vérifie la logique métier de l'endpoint CRUD {@code /medicalRecord} afin :
+ * récupérer la liste des fiches médicales, en ajouter, en mettre à jour et en supprimer.
+ */
 @ExtendWith(MockitoExtension.class)
 public class MedicalrecordServiceTest {
-
+    /**
+     * Mock du repository des fiches médicales.
+     * Permet de simuler les données sans accéder à la source réelle
+     */
     @Mock
     private MedicalrecordRepository medicalrecordRepository;
-
+    /**
+     * Instance du service testé avec injection automatique des mocks.
+     */
     @InjectMocks
     private MedicalrecordService medicalrecordService;
-
+    /**
+     * Liste simulée de fiches médicales utilisée pour les tests.
+     */
     private List<MedicalrecordModel> medicalrecords;
     private MedicalrecordModel mr1;
 
+    /**
+     * Initialise les données de tests avant chaque méthode
+     */
     @BeforeEach
     void setUp() {
-        medicalrecords=new ArrayList<>();
+        medicalrecords = new ArrayList<>();
 
         mr1 = new MedicalrecordModel();
         mr1.setFirstName("Samy");
@@ -42,9 +59,13 @@ public class MedicalrecordServiceTest {
         medicalrecords.add(mr1);
     }
 
-    //GET: Test happy path
+    /**
+     * Vérifie que le service renvoie correctement la liste des fiches médicales.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void getAllMedicalrecord_shouldReturnListOfMedicalrecords() throws Exception{
+    void getAllMedicalrecord_shouldReturnListOfMedicalrecords() throws Exception {
         when(medicalrecordRepository.findAll()).thenReturn(medicalrecords);
 
         List<MedicalrecordModel> result = medicalrecordService.getAllMedicalrecord();
@@ -60,9 +81,14 @@ public class MedicalrecordServiceTest {
         verifyNoMoreInteractions(medicalrecordRepository);
     }
 
-    //ADD: Test happy path
+    /**
+     * Vérifie que le service ajoute correctement une nouvelle fiche médicale
+     * lorsque la personne n'en possède pas déjà une.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void addMedicalrecord_whenNoExisting_shouldReturnCreatedMedicalrecord() throws Exception{
+    void addMedicalrecord_whenNoExisting_shouldReturnCreatedMedicalrecord() throws Exception {
         when(medicalrecordRepository.findAll()).thenReturn(new ArrayList<>(medicalrecords));
 
         MedicalrecordModel toAdd = new MedicalrecordModel();
@@ -97,9 +123,14 @@ public class MedicalrecordServiceTest {
                 .containsExactlyInAnyOrder("Ymas", "Snoc");
     }
 
-    //ADD:Test quand il y'a déjà un medicalrecord associé à la person
+    /**
+     * Vérifie que le service lève une exception
+     * lorsque l'on tente d'ajouter une fiche médicale pour une personne qui en possède déjà une.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void addMedicalrecord_whenExistingMedicalrecord_shouldThrow() throws Exception{
+    void addMedicalrecord_whenExistingMedicalrecord_shouldThrow() throws Exception {
         when(medicalrecordRepository.findAll()).thenReturn(new ArrayList<>(medicalrecords));
 
         MedicalrecordModel duplicate = new MedicalrecordModel();
@@ -109,16 +140,21 @@ public class MedicalrecordServiceTest {
         duplicate.setMedications(List.of("medication:150mg"));
         duplicate.setAllergies(List.of("sugar"));
 
-        assertThatThrownBy(()->medicalrecordService.addMedicalrecord(duplicate))
+        assertThatThrownBy(() -> medicalrecordService.addMedicalrecord(duplicate))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Medicalrecord already exists");
 
         verify(medicalrecordRepository, never()).saveAll(any());
     }
 
-    //UPDATE: Test happy path
+    /**
+     * Vérifie que le service met correctement à jour la fiche médicale existante quand
+     * le nom et le prénom correspondent.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void updateMedicalrecord_whenFirstNameAndLastNameMatches_shouldReturnUpdatedMedicalrecord() throws  Exception{
+    void updateMedicalrecord_whenFirstNameAndLastNameMatches_shouldReturnUpdatedMedicalrecord() throws Exception {
         when(medicalrecordRepository.findAll()).thenReturn(new ArrayList<>(medicalrecords));
 
         MedicalrecordModel updated = new MedicalrecordModel();
@@ -139,9 +175,14 @@ public class MedicalrecordServiceTest {
 
     }
 
-    //UPDATE: Test quand pas de match
+    /**
+     * Vérifie que la méthode retourne {@code null}
+     * lorsqu'aucune personne associée au nom et au prénom renseignés ne correspond à la mise à jour demandée.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void updateMedicalrecord_whenNoFirstNameAndLastNameMatch_shouldReturnNull() throws Exception{
+    void updateMedicalrecord_whenNoFirstNameAndLastNameMatch_shouldReturnNull() throws Exception {
         when(medicalrecordRepository.findAll()).thenReturn(new ArrayList<>(medicalrecords));
 
         MedicalrecordModel updated = new MedicalrecordModel();
@@ -156,9 +197,14 @@ public class MedicalrecordServiceTest {
         assertThat(result).isNull();
     }
 
-    //DELETE: Test Happy path
+    /**
+     * Vérifie que le service supprime correctement une fiche médicale via
+     * le nom et le prénom donnés.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void deleteMedicalrecord_whenFirstNameAndLastNameMatch_shouldDelete() throws Exception{
+    void deleteMedicalrecord_whenFirstNameAndLastNameMatch_shouldDelete() throws Exception {
         when(medicalrecordRepository.findAll()).thenReturn(new ArrayList<>(medicalrecords));
 
         boolean removed = medicalrecordService.deleteMedicalrecord("Samy", "Ymas");
@@ -169,9 +215,14 @@ public class MedicalrecordServiceTest {
 
     }
 
-    //DELETE: Test quand pas de match
+    /**
+     * Vérifie que le service ne supprime aucune fiche médicale lorsque
+     * la combinaise du nom et prénom ne correspond pas .
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void deleteMedicalrecord_whenNoMatch_shouldReturnFalse() throws  Exception{
+    void deleteMedicalrecord_whenNoMatch_shouldReturnFalse() throws Exception {
         when(medicalrecordRepository.findAll()).thenReturn(new ArrayList<>(medicalrecords));
 
         boolean removed = medicalrecordService.deleteMedicalrecord("X", "Y");

@@ -21,31 +21,68 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+/**
+ * Tests unitaires du {@link FloodService}
+ * <p>
+ * Cette classe vérifie la logique métier de l'endpoint {@code /flood} :
+ * à partir de casernes données, le service doit retourner les adresses desservies
+ * ainsi que la liste des résidents couverts ainsi que leurs informations.
+ */
 @ExtendWith(MockitoExtension.class)
 public class FloodServiceTest {
-
+    /**
+     * Mock du repository des personnes.
+     * Permet de simuler les données sans accéder à la source réelle.
+     */
     @Mock
     private PersonRepository personRepository;
-
+    /**
+     * Mock du repository des casernes.
+     * Permet de simuler les données sans accéder à la source réelle.
+     */
     @Mock
     private FirestationRepository firestationRepository;
-
+    /**
+     * Mock du repository des fichiers médicaux.
+     * Permet de simuler les données sans accéder à la source réelle.
+     */
     @Mock
-    MedicalrecordRepository medicalrecordRepository;
-
+    private MedicalrecordRepository medicalrecordRepository;
+    /**
+     * Mock du service de calcul d'âge.
+     * Permet de controller les retours de {@code calculateAge()}.
+     */
     @Mock
     private AgeService ageService;
-
+    /**
+     * Instance du service à tester, avec injections automatiques des mocks.
+     */
     @InjectMocks
     private FloodService floodService;
-
+    /**
+     * Données de test : liste complète de casernes simulées
+     */
     private List<FirestationModel> firestations;
+    /**
+     * Données de test : liste complète de personnes simulées
+     */
     private List<PersonModel> persons;
+    /**
+     * Données de test : liste complète de fiche médicale simulée
+     */
     private List<MedicalrecordModel> medicalrecords;
-
-    private PersonModel p1; // habite à une adresse couverte
+    /**
+     * Personne habitant une adresse couverte.
+     */
+    private PersonModel p1;
+    /**
+     * Personne habitant une adresse non couverte.
+     */
     private PersonModel p2;
 
+    /**
+     * Initialise les données de test avant chaque méthode.
+     */
     @BeforeEach
     void setUp() {
         firestations = new ArrayList<>();
@@ -87,19 +124,22 @@ public class FloodServiceTest {
         medicalrecords.add(mr1);
     }
 
-    //Premier test= happy path
+    /**
+     * Vérifie que le service retourne correctement un {@link FloodDTO} lorsque :
+     * pour les casernes données, on retrouve l'adresse du foyer
+     * ainsi que la liste des résidents et leurs informations.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void getFloodByStations_shouldReturnHouseholdsByAddress() throws Exception{
-        //GIVEN: les données nécessaires
+    void getFloodByStations_shouldReturnHouseholdsByAddress() throws Exception {
         when(firestationRepository.findAll()).thenReturn(firestations);
         when(personRepository.findAll()).thenReturn(persons);
         when(medicalrecordRepository.findAll()).thenReturn(medicalrecords);
         when(ageService.calculateAge(p1)).thenReturn(51);
 
-        //WHEN
         List<FloodDTO> result = floodService.getFloodByStation("1");
 
-        //THEN
         assertThat(result).hasSize(1);
 
         FloodDTO dto = result.get(0);
@@ -114,70 +154,81 @@ public class FloodServiceTest {
         assertThat(resident.getAllergies()).containsExactly("codeine");
     }
 
-    //Test avec deux stations et utilisation du trim
+    /**
+     * Vérifie que le service gère correctement plusieurs stations séparées par une virgule avec espaces (trim).
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
     void getFloodByStations_shouldHandleComaAndTrimSpaces() throws Exception {
-        //GIVEN: stations "1, 2" avec espace doit fonctionner
         when(firestationRepository.findAll()).thenReturn(firestations);
         when(personRepository.findAll()).thenReturn(persons);
         when(medicalrecordRepository.findAll()).thenReturn(medicalrecords);
         when(ageService.calculateAge(p1)).thenReturn(51);
 
-        //WHEN
         List<FloodDTO> result = floodService.getFloodByStation("1, 2");
 
-        //THEN: Samy = 77 Paris, donc au moins un household
         assertThat(result).extracting(FloodDTO::getAddress).contains("77 Paris");
     }
 
-    //Test ou aucune la station ne couvre aucune address
+    /**
+     * Vérifie que lorsque les casernes ne couvrent aucune adresse, le service retourne une liste vide.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void getFloodByStations_whenNoStationMatches_shouldReturnEmpty() throws Exception{
+    void getFloodByStations_whenNoStationMatches_shouldReturnEmpty() throws Exception {
         when(firestationRepository.findAll()).thenReturn(firestations);
         when(personRepository.findAll()).thenReturn(persons);
         when(medicalrecordRepository.findAll()).thenReturn(medicalrecords);
 
-        //WHEN
         List<FloodDTO> result = floodService.getFloodByStation("99");
 
-        //THEN
         assertThat(result).isEmpty();
     }
 
-    //Test le cas ou le medicalrecord associé est vide (TEST A VERIFIER )
+    /**
+     * Vérifie que lorsque les dossiers médicaux ne sont pas retrouvés, les listes medications et allergies sont vides.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void getFloodByStations_whenNoMedicalRecordFound_shouldReturnEmptyMedicalLists() throws Exception{
-        //GIVEN: avec medicalrecord associé à Samy vide
+    void getFloodByStations_whenNoMedicalRecordFound_shouldReturnEmptyMedicalLists() throws Exception {
         when(firestationRepository.findAll()).thenReturn(firestations);
         when(personRepository.findAll()).thenReturn(persons);
         when(medicalrecordRepository.findAll()).thenReturn(List.of());
         when(ageService.calculateAge(p1)).thenReturn(51);
 
-        //WHEN
         List<FloodDTO> result = floodService.getFloodByStation("1");
 
-        //THEN
         ResidentInfoDTO resident = result.get(0).getResidents().get(0);
         assertThat(resident.getMedications()).isEmpty();
         assertThat(resident.getAllergies()).isEmpty();
     }
 
-    //Test si l'address de la person est nulle, on passe à la suite dans service et on ne renvoie rien associé à cette personne
+    /**
+     * Vérifie que lorsque l'adresse d'une personne est nulle, elle n'est pas prise en compte par le service.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void getFloodByStations_whenAddressIsNull_shouldSkipPersonAndGoForTheNextOne() throws Exception{
+    void getFloodByStations_whenAddressIsNull_shouldSkipPersonAndGoForTheNextOne() throws Exception {
         p1.setAddress(null);
         when(firestationRepository.findAll()).thenReturn(firestations);
         when(personRepository.findAll()).thenReturn(persons);
         when(medicalrecordRepository.findAll()).thenReturn(medicalrecords);
 
-        //WHEN
         List<FloodDTO> result = floodService.getFloodByStation("1");
 
-        //THEN
         assertThat(result).isEmpty();
     }
 
-    //Test lorsque medicalrecord n'est pas vide mais les list s'y trouvant si
+    /**
+     * Vérifie que lorsque les listes de medications et allergies existent, mais sont vides,
+     * alors le service renvoie des listes vides.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
     void getFloodByStations_whenMedicalListsAreNull_shouldReturnEmptyLists() throws Exception {
         MedicalrecordModel mrNull = new MedicalrecordModel();

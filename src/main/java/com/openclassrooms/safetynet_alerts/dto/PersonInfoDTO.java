@@ -2,6 +2,21 @@ package com.openclassrooms.safetynet_alerts.dto;
 
 import java.util.List;
 
+/**
+ * DTO représentant les informations personnelles et médicales
+ * d'une personne, utilisé dans le cadre de l'endpoint
+ * /personInfo?lastName={lastName}.
+ *
+ * <p>Ce DTO regroupe les informations suivantes :</p>
+ * <ul>
+ *     <li>Le nom de famille</li>
+ *     <li>L’adresse</li>
+ *     <li>L’âge</li>
+ *     <li>L’adresse email</li>
+ *     <li>La liste des médicaments</li>
+ *     <li>La liste des allergies</li>
+ * </ul>
+ */
 public class PersonInfoDTO {
 
     private String lastName;
@@ -16,9 +31,24 @@ public class PersonInfoDTO {
 
     private List<String> allergies;
 
-    public PersonInfoDTO() {//Constructeur vide Jackson
+    /**
+     * Constructeur vide requis par Jackson pour la
+     * désérialisation JSON.
+     */
+
+    public PersonInfoDTO() {
     }
 
+    /**
+     * Constructeur permettant d'instancier un PersonInfoDTO
+     *
+     * @param lastName    nom de famille de la personne
+     * @param address     adresse de la personne
+     * @param age         âge de la personne
+     * @param email       adresse email de la personne
+     * @param medications liste des médicaments de la personne
+     * @param allergies   liste des allergies de la personne
+     */
     public PersonInfoDTO(String lastName, String address, int age, String email, List<String> medications, List<String> allergies) {
         this.lastName = lastName;
         this.address = address;

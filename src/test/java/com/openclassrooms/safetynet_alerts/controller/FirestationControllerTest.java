@@ -21,29 +21,49 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Classe de test du {@link FirestationController}
+ * <p>
+ * Cette classe vérifie le bon fonctionnement des endpoints CRUD exposés par l'URL /firestation
+ */
 @ExtendWith(MockitoExtension.class)
 public class FirestationControllerTest {
-
+    /**
+     * Service mocké pour isoler le controller
+     */
     @Mock
     private FirestationService service;
-
+    /**
+     * Controller injecté avec le service mocké
+     */
     @InjectMocks
     private FirestationController controller;
-
+    /**
+     * Outil permettant de simuler les requêtes HTTP
+     */
     private MockMvc mockMvc;
+    /**
+     * Outil permettant de convertir un modèle en chaine JSON
+     */
     private ObjectMapper mapper;
 
+    /**
+     * Initialise l'environnement de test avant chaque exécution.
+     */
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new GlobalExceptionHandler()).build();
         mapper = new ObjectMapper();
     }
 
-    //GET : Test Happy Path
+    /**
+     * Vérifie que l'endpoint GET /firestation retourne la liste complète des casernes lorsque le service renvoie des données valides.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void getAllFirestation_shouldReturnListOfFirestations() throws Exception{
-        //GIVEN: données du test
-        FirestationModel f1 =new FirestationModel();
+    void getAllFirestation_shouldReturnListOfFirestations() throws Exception {
+        FirestationModel f1 = new FirestationModel();
         f1.setAddress("77 Paris");
         f1.setStation("1");
 
@@ -55,18 +75,22 @@ public class FirestationControllerTest {
 
         when(service.getAllFirestation(any(FirestationModel.class))).thenReturn(firestations);
 
-        //WHEN + THEN:HTTP et asseertions
         mockMvc.perform(get("/firestation")
-                .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].station").value("1"))
                 .andExpect(jsonPath("$[0].address").value("77 Paris"));
     }
 
-    //GET: Test service renvoie IOException
+    /**
+     * Vérifie que l'endpoint GET /firestation retourne un statut HTTP 500 lorsque le service lève une IOException.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
+
     @Test
-    void getAllFirestation_serviceThrowsIOException_shouldReturn500() throws Exception{
+    void getAllFirestation_serviceThrowsIOException_shouldReturn500() throws Exception {
         when(service.getAllFirestation(any(FirestationModel.class))).thenThrow(new IOException());
 
         mockMvc.perform(get("/firestation"))
@@ -74,11 +98,14 @@ public class FirestationControllerTest {
                 .andExpect(content().string("Internal server error"));
     }
 
-    //POST: Test Happy path
+    /**
+     * Vérifie que l'endpoint POST /firestation ajoute correctement une nouvelle caserne.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void addFirestation_shouldReturnCreatedFirestation() throws Exception{
-        //GIVEN
-        FirestationModel f1 =new FirestationModel();
+    void addFirestation_shouldReturnCreatedFirestation() throws Exception {
+        FirestationModel f1 = new FirestationModel();
         f1.setAddress("77 Paris");
         f1.setStation("1");
 
@@ -86,18 +113,21 @@ public class FirestationControllerTest {
 
         String json = mapper.writeValueAsString(f1);
 
-        //WHEN+THEN
         mockMvc.perform(post("/firestation").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].address").value("77 Paris"))
                 .andExpect(jsonPath("$[0].station").value("1"));
     }
 
-    //POST : Test service renvoie IOException
+    /**
+     * Vérifie que l'endpoint POST /firestation retourne un statut HTTP 500 lorsque le service lève une IOException.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
+
     @Test
-    void addFirestation_serviceThrowsIOException_shouldReturn500() throws Exception{
-        //GIVEN
-        FirestationModel f1 =new FirestationModel();
+    void addFirestation_serviceThrowsIOException_shouldReturn500() throws Exception {
+        FirestationModel f1 = new FirestationModel();
         f1.setAddress("77 Paris");
         f1.setStation("1");
 
@@ -105,16 +135,18 @@ public class FirestationControllerTest {
 
         String json = mapper.writeValueAsString(f1);
 
-        //WHEN+THEN
         mockMvc.perform(post("/firestation").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("Internal server error"));
     }
 
-    //PUT: Test Happy path
+    /**
+     * Vérifie que l'endpoint PUT /firestation met à jour correctement une caserne existante.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void updateFirestation_whenMatching_shouldReturnUpdatedStation() throws Exception{
-        //GIVEN
+    void updateFirestation_whenMatching_shouldReturnUpdatedStation() throws Exception {
         FirestationModel updated = new FirestationModel();
         updated.setStation("1");
         updated.setAddress("78 Paris");
@@ -123,18 +155,20 @@ public class FirestationControllerTest {
 
         String json = mapper.writeValueAsString(updated);
 
-        //WHEN+THEN
         mockMvc.perform(put("/firestation").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
-                .content(json))
+                        .content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].station").value("1"))
                 .andExpect(jsonPath("$[0].address").value("78 Paris"));
     }
 
-    //PUT: Test service renvoie IOException
+    /**
+     * Vérifie que l'endpoint PUT /firestation retourne un statut HTTP 500 lorsque le service lève une IOException.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void updateFiresation_serviceThrowsIOException_shouldReturn500() throws Exception{
-        //GIVEN
+    void updateFiresation_serviceThrowsIOException_shouldReturn500() throws Exception {
         FirestationModel updated = new FirestationModel();
         updated.setStation("1");
         updated.setAddress("78 Paris");
@@ -143,37 +177,46 @@ public class FirestationControllerTest {
 
         String json = mapper.writeValueAsString(updated);
 
-        //WHEN+THEN
         mockMvc.perform(put("/firestation").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("Internal server error"));
     }
 
-    //DELETE: Test Happy path
+    /**
+     * Vérifie que l'endpoint DELETE /firestation supprime correctement une caserne existante.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void deleteFirestation_whenRemovedTrue_shouldReturnTrue() throws Exception{
+    void deleteFirestation_whenRemovedTrue_shouldReturnTrue() throws Exception {
         when(service.deleteFirestation("77 Paris", "1")).thenReturn(true);
 
-        //WHEN+THEN
         mockMvc.perform(delete("/firestation").param("address", "77 Paris").param("station", "1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
     }
 
-    //DELETE: Test suppresion n'est pas effectuée
+    /**
+     * Vérifie que l'endpoint DELETE /firestation retourne false lorsque la suppression ne correspond à aucune caserne.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void deleteFirestation_whenRemovedFalse_shouldReturnFalse() throws Exception{
+    void deleteFirestation_whenRemovedFalse_shouldReturnFalse() throws Exception {
         when(service.deleteFirestation("77 Paris", "1")).thenReturn(false);
 
-        //WHEN+THEN
         mockMvc.perform(delete("/firestation").param("address", "77 Paris").param("station", "1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("false"));
     }
 
-    //DELETE: Test service renvoie une IOException
+    /**
+     * Vérifie que l'endpoint DELETE /firestation retourne un statut HTTP 500 lorsque le service lève une IOException.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void deleteFirestation_serviceThrowsIOException_shouldReturn500() throws Exception{
+    void deleteFirestation_serviceThrowsIOException_shouldReturn500() throws Exception {
         when(service.deleteFirestation("77 Paris", "1")).thenThrow(new IOException());
 
         mockMvc.perform(delete("/firestation").param("address", "77 Paris").param("station", "1"))

@@ -13,21 +13,39 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+/**
+ * Tests unitaires du {@link PersonService}
+ * <p>
+ * Cette classe vérifie la logique métier de l'endpoint CRUD {@code /person} afin de :
+ * récupérer la liste des personnes, en ajouter, les mettre à jour et en supprimer.
+ *
+ */
 @ExtendWith(MockitoExtension.class)
-public class PersonServiceTest  {
-
+public class PersonServiceTest {
+    /**
+     * Mock du repository des personnes.
+     * Permet de simuler les données sans accéder à la source réelle
+     */
     @Mock
     private PersonRepository personRepository;
-
+    /**
+     * Instance du service testé avec injection automatique des mocks.
+     */
     @InjectMocks
     private PersonService personService;
-
+    /**
+     * Liste simulée de personnes utilisée pour les tests.
+     */
     private List<PersonModel> persons;
     private PersonModel p1;
 
+    /**
+     * Initialise les données de tests avant chaque méthode
+     */
     @BeforeEach
     void setUp() {
         persons = new ArrayList<>();
@@ -44,9 +62,13 @@ public class PersonServiceTest  {
         persons.add(p1);
     }
 
-    //GETALL- Test Happy Path
+    /**
+     * Vérifie que le service renvoie correctement la liste des personnes.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void getAllPersons_shouldReturnListPersons() throws Exception{
+    void getAllPersons_shouldReturnListPersons() throws Exception {
         when(personRepository.findAll()).thenReturn(persons);
 
         List<PersonModel> result = personService.getAllPersons();
@@ -57,9 +79,13 @@ public class PersonServiceTest  {
         verifyNoMoreInteractions(personRepository);
     }
 
-    //ADD-Test Happy Path
+    /**
+     * Vérifie que le service ajoute correctement une nouvelle personne non existante.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void addPerson_whenNoExisting_shouldAdd() throws Exception{
+    void addPerson_whenNoExisting_shouldAdd() throws Exception {
         when(personRepository.findAll()).thenReturn(persons);
 
         PersonModel toAdd = new PersonModel();
@@ -81,16 +107,20 @@ public class PersonServiceTest  {
 
     }
 
-    //ADD-Test quand la person ajoutée existe déjà dans le repository
+    /**
+     * Vérifie que le service lève une exception lorsque l'on tente d'ajouter une personne déjà existante.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void addPerson_WhenAlreadyExists_shouldThrowIllegalArgumentException() throws Exception{
+    void addPerson_WhenAlreadyExists_shouldThrowIllegalArgumentException() throws Exception {
         when(personRepository.findAll()).thenReturn(persons);
 
         PersonModel duplicate = new PersonModel();
         duplicate.setFirstName("Samy");
         duplicate.setLastName("Ymas");
 
-        assertThatThrownBy(()->personService.addPerson(duplicate))
+        assertThatThrownBy(() -> personService.addPerson(duplicate))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Person already exists");
 
@@ -98,9 +128,13 @@ public class PersonServiceTest  {
         verify(personRepository, never()).saveAll(any());
     }
 
-    //UPDATE-Test happy path, on update la person
+    /**
+     * Vérifie qu'une personne existante est correctement mise à jour.
+     *
+     * @throws Exception en caas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void updatePerson_whenPersonExists_shouldReturnUpdatedPerson() throws Exception{
+    void updatePerson_whenPersonExists_shouldReturnUpdatedPerson() throws Exception {
         when(personRepository.findAll()).thenReturn(persons);
 
         PersonModel updated = new PersonModel();
@@ -126,9 +160,14 @@ public class PersonServiceTest  {
         verify(personRepository).saveAll(persons);
     }
 
-    //UPDATE-Test quand la person updated n'est pas trouvé dans le repository
+    /**
+     * Vérifie que la méthode retourne {@code null}
+     * lorsqu’aucune personne correspondante n’est trouvée lors d’une mise à jour.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void updatePerson_whenNoMatching_shouldReturnNull() throws Exception{
+    void updatePerson_whenNoMatching_shouldReturnNull() throws Exception {
         when(personRepository.findAll()).thenReturn(persons);
 
         PersonModel updated = new PersonModel();
@@ -142,9 +181,13 @@ public class PersonServiceTest  {
         verify(personRepository, never()).saveAll(any());
     }
 
-    //DELETE-Test Happy Path
+    /**
+     * Vérifie qu'une personne est correctement supprimée.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void deletePerson_whenMatch_shouldDeleteAndSave() throws Exception{
+    void deletePerson_whenMatch_shouldDeleteAndSave() throws Exception {
         when(personRepository.findAll()).thenReturn(persons);
 
         boolean removed = personService.deletePerson("Samy", "Ymas");
@@ -155,15 +198,20 @@ public class PersonServiceTest  {
         verify(personRepository).saveAll(persons);
     }
 
-    //DELETE-Test quand person supprimé n'est pas trouvée
+    /**
+     * Vérifie que la suppression retourne {@code false}
+     * lorsqu’aucune personne correspondante n’est trouvée.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void deletePerson_whenNoMatching_shouldReturnFalse() throws Exception{
+    void deletePerson_whenNoMatching_shouldReturnFalse() throws Exception {
         when(personRepository.findAll()).thenReturn(persons);
 
         boolean removed = personService.deletePerson("No", "One");
 
         assertThat(removed).isFalse();
         assertThat(persons).hasSize(1);
-        verify(personRepository,never()).saveAll(any());
+        verify(personRepository, never()).saveAll(any());
     }
 }

@@ -19,27 +19,52 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+/**
+ * Tests unitaires du {@link PersonInfoService}
+ * <p>
+ * Cette classe vérifie la logique métier de l'endpoint {@code /personInfolastName={lastName}}:
+ * à partir d'un nom donné, le service doit retourner les données personnelles et médicales de la personne portant le nom.
+ */
 @ExtendWith(MockitoExtension.class)
 public class PersonInfoServiceTest {
 
-    //Dépendance
+    /**
+     * Mock du repository des personnes.
+     * Permet de simuler les données retournées sans accéder à la source réelle.
+     */
     @Mock
     private PersonRepository personRepository;
-    //Dépendance
+    /**
+     * Mock du repository des fichiers médicaux.
+     * Permet de simuler les données retournées sans accéder à la source réelle.
+     */
     @Mock
     private MedicalrecordRepository medicalrecordRepository;
-    //Dépendance
+    /**
+     * Mock du service de calcul d'âge.
+     * Permet de contrôler les retours de {@code calculateAge()}.
+     */
     @Mock
     private AgeService ageService;
-
+    /**
+     * Instance du service à tester, avec injections automatiques des mocks.
+     */
     @InjectMocks
     private PersonInfoService personInfoService;
-
+    /**
+     * Données de test : liste complète de personnes simulées
+     */
     private List<PersonModel> persons;
+    /**
+     * Données de test : liste complète de fiches médicales simulées
+     */
     private List<MedicalrecordModel> medicalrecords;
 
+    /**
+     * Initialise les données de test avant chaque méthode
+     */
     @BeforeEach
-    void setUp(){
+    void setUp() {
 
         persons = new ArrayList<>();
 
@@ -52,7 +77,7 @@ public class PersonInfoServiceTest {
         persons.add(p1);
 
         medicalrecords = new ArrayList<>();
-        MedicalrecordModel m1= new MedicalrecordModel();
+        MedicalrecordModel m1 = new MedicalrecordModel();
         m1.setFirstName("Samy");
         m1.setLastName("Ymas");
         m1.setMedications(List.of("medications:50mg"));
@@ -62,9 +87,14 @@ public class PersonInfoServiceTest {
 
     }
 
-    //Test Happy Path, on retourne le DTO avec toutes les infos
+    /**
+     * Vérifie que le service retourne correctement un {@link PersonInfoDTO}
+     * lorsque le nom correspond à une personne existante.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void getPersonInfoByLastName_shouldReturnDTO() throws Exception{
+    void getPersonInfoByLastName_shouldReturnDTO() throws Exception {
         //On appelle les listes configurées dans le setUp
         when(personRepository.findAll()).thenReturn(persons);
         when(medicalrecordRepository.findAll()).thenReturn(medicalrecords);
@@ -80,17 +110,21 @@ public class PersonInfoServiceTest {
         assertThat(result).hasSize(1);
 
         PersonInfoDTO personInfoDTO = result.get(0);
-         assertThat(personInfoDTO.getLastName()).isEqualTo("Ymas");
-         assertThat(personInfoDTO.getAddress()).isEqualTo("77 Paris");
-         assertThat(personInfoDTO.getAge()).isEqualTo(51);
-         assertThat(personInfoDTO.getEmail()).isEqualTo("Samy@mail.com");
-         assertThat(personInfoDTO.getMedications()).containsExactly("medications:50mg");
-         assertThat(personInfoDTO.getAllergies()).containsExactly("codeine");
+        assertThat(personInfoDTO.getLastName()).isEqualTo("Ymas");
+        assertThat(personInfoDTO.getAddress()).isEqualTo("77 Paris");
+        assertThat(personInfoDTO.getAge()).isEqualTo(51);
+        assertThat(personInfoDTO.getEmail()).isEqualTo("Samy@mail.com");
+        assertThat(personInfoDTO.getMedications()).containsExactly("medications:50mg");
+        assertThat(personInfoDTO.getAllergies()).containsExactly("codeine");
     }
 
-    //Test lorsqu'on ne trouve pas de person ni medicalrecord avec le nom associé
+    /**
+     * Vérifie que le service lorsqu'on ne retrouve aucune personne ni fiche médicale avec le nom donné.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void getPersonInfoByLastName_shouldReturnEmptyList_whenNoLastNameFound() throws Exception{
+    void getPersonInfoByLastName_shouldReturnEmptyList_whenNoLastNameFound() throws Exception {
         when(personRepository.findAll()).thenReturn(persons);
         when(medicalrecordRepository.findAll()).thenReturn(medicalrecords);
 
@@ -99,9 +133,14 @@ public class PersonInfoServiceTest {
         assertThat(result).isEmpty();
     }
 
-    //Test lorsqu'on ne retrouve pas de medicalrecord
+    /**
+     * Vérifie que lorsque la personne existe, mais que le dossier médical n'est pas retrouvé,
+     * alors les listes medications et allergies sont vides.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
-    void getPersonInfoByLastName_shouldReturnEmptyMedicalLists_whenNoMedicalRecordFound() throws Exception{
+    void getPersonInfoByLastName_shouldReturnEmptyMedicalLists_whenNoMedicalRecordFound() throws Exception {
         when(personRepository.findAll()).thenReturn(persons);
         when(medicalrecordRepository.findAll()).thenReturn(List.of());
 
@@ -113,13 +152,18 @@ public class PersonInfoServiceTest {
         List<PersonInfoDTO> result = personInfoService.getPersonInfoByLastName("Ymas");
 
         assertThat(result).hasSize(1);
-        PersonInfoDTO personInfoDTO =result.get(0);
+        PersonInfoDTO personInfoDTO = result.get(0);
 
         assertThat(personInfoDTO.getMedications()).isEmpty();
         assertThat(personInfoDTO.getAllergies()).isEmpty();
     }
 
-    //Test lorsque la person n'a pas de medications ni d'allergies
+    /**
+     * Vérifie que lorsque le dossier médical existe, mais contient
+     * des listes vides, celles-ci sont correctement conservées.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test.
+     */
     @Test
     void getPersonInfoByLastName_shouldKeepEmptyLists_whenMedicalListsAreEmpty() throws Exception {
         MedicalrecordModel mNull = new MedicalrecordModel();

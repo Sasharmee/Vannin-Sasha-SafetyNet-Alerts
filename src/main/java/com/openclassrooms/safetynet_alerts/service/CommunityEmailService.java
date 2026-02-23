@@ -10,6 +10,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service responsable de la logique métier de l'endpoint /communityEmail.
+ * <p>
+ * Ce service permet de récupérer les adresses e-mail de tous les habitants d'une ville donnée.
+ */
+
 @Service
 public class CommunityEmailService {
 
@@ -17,13 +23,27 @@ public class CommunityEmailService {
 
     private final PersonRepository personRepository;
 
-    public CommunityEmailService(PersonRepository personRepository){
+    /**
+     * Construit le service CommunityEmail
+     *
+     * @param personRepository repository permettant l'accès aux données des personnes
+     */
+    public CommunityEmailService(PersonRepository personRepository) {
         this.personRepository = personRepository;
     }
 
-    public List<String> getEmailsByCity(String city) throws IOException{
+    /**
+     * Récupère la liste des adresses e-mail des personnes vivant dans une ville donnée.
+     * Si aucune personne n'est trouvée dans la ville indiquée, une liste vide est retournée.
+     *
+     * @param city ville à analyser
+     * @return liste des adresses e-mail des personnes (sans doublons)
+     * @throws IOException en cas d'erreur lors de l'accès aux données
+     */
 
-        logger.debug("Starting email search for city{}", city);
+    public List<String> getEmailsByCity(String city) throws IOException {
+
+        logger.debug("Starting email search for city={}", city);
 
         List<PersonModel> persons = personRepository.findAll();
         logger.debug("Loaded {} persons from repository", persons.size());
@@ -37,7 +57,7 @@ public class CommunityEmailService {
                 }
             }
         }
-        logger.debug("Found {} unique emails for city{}", emails.size(), city);
+        logger.debug("Found {} unique emails for city={}", emails.size(), city);
 
         return emails;
     }

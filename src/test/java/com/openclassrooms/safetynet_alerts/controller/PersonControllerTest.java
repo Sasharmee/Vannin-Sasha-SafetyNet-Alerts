@@ -21,27 +21,48 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Classe de test du {@link PersonController}
+ * <p>
+ * Cette classe vérifie le bon fonctionnement des endpoints CRUD exposés par l'URL /person
+ */
 @ExtendWith(MockitoExtension.class)
 public class PersonControllerTest {
-
+    /**
+     * Service mocké pour isoler le controller
+     */
     @Mock
     private PersonService service;
-
+    /**
+     * Controller injecté avec le service mocké
+     */
     @InjectMocks
     private PersonController controller;
-
+    /**
+     * Outil permettant de simuler les requêtes HTTP
+     */
     private MockMvc mockMvc;
+    /**
+     * Outil permettant de convertir un modèle en chaîne JSON
+     */
     private ObjectMapper mapper;
 
+    /**
+     * Initialise l'environnement de test avant chaque exécution.
+     */
     @BeforeEach
-    void setUp(){
-        mockMvc= MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new GlobalExceptionHandler()).build();
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new GlobalExceptionHandler()).build();
         mapper = new ObjectMapper();
     }
 
-    //GET: TEST Happy path
+    /**
+     * Vérifie que l'endpoint GET /person retourne correctement la liste des personnes lorsque le service renvoie des données valides.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void getAllPersons_shouldReturnListOfPersons() throws Exception{
+    void getAllPersons_shouldReturnListOfPersons() throws Exception {
         //GIVEN: données du test
         PersonModel p1 = new PersonModel();
         p1.setFirstName("Samy");
@@ -61,7 +82,7 @@ public class PersonControllerTest {
 
         //WHEN+THEN
         mockMvc.perform(get("/person")
-                .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].firstName").value("Samy"))
@@ -70,9 +91,13 @@ public class PersonControllerTest {
                 .andExpect(jsonPath("$[0].phone").value("123-456-789"));
     }
 
-    //GET : Test Service renvoie IOException
+    /**
+     * Vérifie que l'endpoint GET /person retourne un statut HTTP 500 lorsque le service lève une IOException.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void getAllPersons_serviceThrowsIOException_shouldReturn500() throws Exception{
+    void getAllPersons_serviceThrowsIOException_shouldReturn500() throws Exception {
         when(service.getAllPersons()).thenThrow(new IOException("boom"));
 
         mockMvc.perform(get("/person"))
@@ -80,9 +105,13 @@ public class PersonControllerTest {
                 .andExpect(content().string("Internal server error"));
     }
 
-    //POST: Test Happy path
+    /**
+     * Vérifie que l'endpoint POST /person ajoute correctement une personne
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void addPerson_shouldReturnCreatedPerson() throws Exception{
+    void addPerson_shouldReturnCreatedPerson() throws Exception {
         //GIVEN
         PersonModel person = new PersonModel();
         person.setFirstName("Samy");
@@ -107,9 +136,13 @@ public class PersonControllerTest {
                 .andExpect(jsonPath("$.phone").value("123-456-789"));
     }
 
-    //POST : Test service renvoie IOException
+    /**
+     * Vérifie que l'endpoint POST /person retourne un statut HTTP 500 lorsque le service lève une IOException.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void addPerson_serviceThrowsIOException_shouldReturn500() throws Exception{
+    void addPerson_serviceThrowsIOException_shouldReturn500() throws Exception {
         PersonModel p1 = new PersonModel();
         p1.setFirstName("Samy");
         p1.setLastName("Ymas");
@@ -124,9 +157,13 @@ public class PersonControllerTest {
                 .andExpect(content().string("Internal server error"));
     }
 
-    //PUT: Test Happy path (update person)
+    /**
+     * Vérifie que l'endpoint PUT /person met à jour correctement une personne existante.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void updatePerson_shouldReturnUpdatedPerson()  throws Exception{
+    void updatePerson_shouldReturnUpdatedPerson() throws Exception {
         //GIVEN
         PersonModel updated = new PersonModel();
         updated.setFirstName("Samy");
@@ -147,9 +184,13 @@ public class PersonControllerTest {
                 .andExpect(jsonPath("$.phone").value("123-456-789"));
     }
 
-    //PUT : Test service renvoie IOException
+    /**
+     * Vérifie que l'endpoint PUT /person retourne un statut HTTP 500 lorsque le service lève une IOException.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void updatePerson_serviceThrowsIOException_shouldReturn500() throws Exception{
+    void updatePerson_serviceThrowsIOException_shouldReturn500() throws Exception {
         //GIVEN
         PersonModel updated = new PersonModel();
         updated.setFirstName("Samy");
@@ -166,21 +207,29 @@ public class PersonControllerTest {
                 .andExpect(content().string("Internal server error"));
     }
 
-    //DELETE : Test Happy path
+    /**
+     * Vérifie que l'endpoint DELETE /person supprime correctement une personne existante.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void deletePerson_whenRemovedTrue_shouldReturnTrue() throws Exception{
+    void deletePerson_whenRemovedTrue_shouldReturnTrue() throws Exception {
         when(service.deletePerson("Samy", "Ymas")).thenReturn(true);
 
         mockMvc.perform(delete("/person")
-                .param("firstName", "Samy")
-                .param("lastName", "Ymas"))
+                        .param("firstName", "Samy")
+                        .param("lastName", "Ymas"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
     }
 
-    //DELETE : Test quand la suppresion ne fonctionne pas
+    /**
+     * Vérifie que l'endpoint DELETE /person retourne false lorsque la suppression ne correspond à aucune personne.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void deletePerson_whenRemovedFalse_shouldReturnFalse() throws Exception{
+    void deletePerson_whenRemovedFalse_shouldReturnFalse() throws Exception {
         when(service.deletePerson("Samy", "Ymas")).thenReturn(false);
 
         mockMvc.perform(delete("/person")
@@ -190,16 +239,24 @@ public class PersonControllerTest {
                 .andExpect(content().string("false"));
     }
 
-    //DELETE : Test quand la person à supprimer n'est pas renseignée
+    /**
+     * Vérifie que l'endpoint DELETE /person retourne 400 lorsque la personne à supprimer n'est pas renseignée
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void deletePerson_missingParam_shouldReturn400() throws Exception{
+    void deletePerson_missingParam_shouldReturn400() throws Exception {
         mockMvc.perform(delete("/person"))
                 .andExpect(status().isBadRequest());
     }
 
-    //DELETE : test service renvoie une IOException
+    /**
+     * Vérifie que l'endpoint DELETE /person retourne un statut HTTP 500 lorsque le service lève une IOException.
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void deletePerson_serviceThrowsIOException_shouldReturn500() throws Exception{
+    void deletePerson_serviceThrowsIOException_shouldReturn500() throws Exception {
         when(service.deletePerson("Samy", "Ymas")).thenThrow(new IOException("boom"));
 
         mockMvc.perform(delete("/person").param("firstName", "Samy").param("lastName", "Ymas"))

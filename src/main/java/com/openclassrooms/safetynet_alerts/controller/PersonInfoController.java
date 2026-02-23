@@ -20,9 +20,25 @@ public class PersonInfoController {
 
     private final PersonInfoService personInfoService;
 
-    public PersonInfoController(PersonInfoService personInfoService){
+    /**
+     * Contrôleur REST exposant l'endpoint /personInfoLastName avec comme paramètre lastName permettant de récupérer les données personnelles et médicales d'une personne
+     *
+     * @param personInfoService service où se trouve la logique métier de l'endpoint
+     */
+
+    public PersonInfoController(PersonInfoService personInfoService) {
         this.personInfoService = personInfoService;
     }
+
+    /**
+     * Récupère la liste des informations personnelles et médicales
+     * des personnes portant le nom de famille donné.
+     *
+     * @param lastName nom de famille à analyser
+     * @return une liste de {@link PersonInfoDTO}. La liste est vide
+     * si aucune personne ne correspond.
+     * @throws IOException en cas d'erreur lors de l'accès aux données
+     */
 
     @GetMapping("/personInfolastName={lastName}")
     public List<PersonInfoDTO> getPersonInfoByLastName(@PathVariable String lastName) throws IOException {

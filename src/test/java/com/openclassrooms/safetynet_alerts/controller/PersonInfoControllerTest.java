@@ -20,30 +20,43 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-//extension permet d'utiliser @Mock et @InjectMocks
+/**
+ * Classe de test du {@link PersonInfoController}
+ * <p>
+ * Cette classe vérifie le bon fonctionnement de l'endpoint /personInfoLastName avec comme paramètre lastName
+ */
 @ExtendWith(MockitoExtension.class)
 public class PersonInfoControllerTest {
-
-    //on crée un faux service
+    /**
+     * Service mocké pour isoler le controller
+     */
     @Mock
     private PersonInfoService service;
-
-    //Mockito crée le controller et y injecte le faux service crée au préalable
+    /**
+     * Controller injecté avec le service mocké
+     */
     @InjectMocks
     private PersonInfoController controller;
-
-    //faux serveur HTTP qui simule les appels HTTP sans démarrer Tomcat ni ouvrir le port
+    /**
+     * Outil permettant de simuler les requêtes HTTP
+     */
     private MockMvc mockMvc;
 
-    //crée un mockMvc en standalone, charge uniquement le controller, on test ce controller et rien d'autre.
+    /**
+     * Initialise MockMvc avant chaque test avec le GlobalExceptionHandler configuré
+     */
     @BeforeEach
-    void setUp(){
+    void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new GlobalExceptionHandler()).build();
     }
 
-    //Premier test = comportement attendu par la méthode
+    /**
+     * Vérifie que l'endpoint retourne correctement un {@link PersonInfoDTO} lorsque les informations de la personne portant le nom renseigné sont retrouvées
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void getPersonInfoByLastName_shouldReturnInfos() throws Exception{
+    void getPersonInfoByLastName_shouldReturnInfos() throws Exception {
         //données du test
         String lastName = "Ymas";
         PersonInfoDTO personInfoDTO = new PersonInfoDTO(
@@ -58,7 +71,7 @@ public class PersonInfoControllerTest {
 
         //WHEN + THEN: Appel HTTP + assertions
         mockMvc.perform(get("/personInfolastName={lastName}", lastName)
-                .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].lastName").value("Ymas"))
                 .andExpect(jsonPath("$[0].address").value("77 Paris"))
@@ -68,22 +81,30 @@ public class PersonInfoControllerTest {
                 .andExpect(jsonPath("$[0].allergies[0]").value("codeine"));
     }
 
-    //Test lorsqu'on ne retrouve personne via le nom renseigné
+    /**
+     * Vérifie le comportement de l'endpoint lorsqu'aucune personne n'a le nom renseigné
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void getPersonInfoByLastName_shouldReturn200AndEmptyList_personNotFound() throws Exception{
+    void getPersonInfoByLastName_shouldReturn200AndEmptyList_personNotFound() throws Exception {
         String lastName = "XYZ";
         when(service.getPersonInfoByLastName(lastName)).thenReturn(List.of());
 
         //WHEN + THEN
         mockMvc.perform(get("/personInfolastName={lastName}", lastName)
-                .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
     }
 
-    //Test d'erreur lorsque le service lève une exception
+    /**
+     * Vérifie que l'endpoint retourne une erreur 500 lorsque le service lève une {@link IOException}
+     *
+     * @throws Exception en cas d'erreur lors de l'exécution du test
+     */
     @Test
-    void getPersonInfoByLastName_shouldReturn500_serviceThrowsIOException() throws Exception{
+    void getPersonInfoByLastName_shouldReturn500_serviceThrowsIOException() throws Exception {
         //données du test
         String lastName = "Ymas";
         PersonInfoDTO personInfoDTO = new PersonInfoDTO(

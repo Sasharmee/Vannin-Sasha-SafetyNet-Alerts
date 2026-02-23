@@ -2,6 +2,19 @@ package com.openclassrooms.safetynet_alerts.dto;
 
 import java.util.List;
 
+/**
+ * DTO représentant les informations d’un résident vivant à une adresse donnée dans le cadre de l’endpoint /fire.
+ *
+ * <p>
+ * Ce DTO contient :
+ * <ul>
+ *     <li>Le nom de famille du résident</li>
+ *     <li>Son numéro de téléphone</li>
+ *     <li>Son âge</li>
+ *     <li>La liste de ses médicaments</li>
+ *     <li>La liste de ses allergies</li>
+ * </ul>
+ */
 public class ResidentInfoDTO {
 
     private String lastName;
@@ -14,9 +27,23 @@ public class ResidentInfoDTO {
 
     private List<String> allergies;
 
-    public ResidentInfoDTO() { //constructeur vide pour Jackson
+    /**
+     * Constructeur vide requis par Jackson pour la
+     * désérialisation JSON.
+     */
+
+    public ResidentInfoDTO() {
     }
 
+    /**
+     * Constructeur permettant d'instancier ResidentInfoDTO
+     *
+     * @param lastName    nom de famille de la personne
+     * @param phone       numéro de téléphone de la personne
+     * @param age         âge de la personne
+     * @param medications liste de médicaments de la personne
+     * @param allergies   liste des allergies de la personne
+     */
     public ResidentInfoDTO(String lastName, String phone, int age, List<String> medications, List<String> allergies) {
         this.lastName = lastName;
         this.phone = phone;

@@ -19,13 +19,28 @@ public class PhoneAlertController {
 
     private final PhoneAlertService phoneAlertService;
 
-    public PhoneAlertController(PhoneAlertService phoneAlertService){
+    /**
+     * Contrôleur REST exposant l'endpoint /phoneAlert avec comme paramètre firestation permettant de récupérer la liste de numéros de téléphones des habitants vivant aux adresses desservies par la caserne donnée
+     *
+     * @param phoneAlertService service où se retrouve la logique métier de l'endpoint
+     */
+    public PhoneAlertController(PhoneAlertService phoneAlertService) {
         this.phoneAlertService = phoneAlertService;
     }
 
+    /**
+     * Récupère la liste des numéros de téléphone des membres des foyers
+     * desservis par la caserne donnée.
+     *
+     * @param stationNumber numéro de la caserne à analyser
+     * @return une liste de numéros de téléphone. La liste est vide
+     * si la station ne couvre aucun foyer.
+     * @throws IOException en cas d'erreur lors de l'accès aux données
+     */
+
     //GET
     @GetMapping
-    public List<String> getPhoneByStation(@RequestParam("firestation") String stationNumber) throws IOException{
+    public List<String> getPhoneByStation(@RequestParam("firestation") String stationNumber) throws IOException {
 
         logger.info("GET /phoneAlert firestation={}", stationNumber);
 
